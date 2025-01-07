@@ -45,6 +45,17 @@ class ChurchScheduler:
         except Exception as e:
             st.error(f"Error loading availability data: {str(e)}")
             return None
+
+    def load_final_schedule_data(self):
+        """Load and clean availability data"""
+        try:
+            final_schedule = self.sheet.worksheet_by_title("final_schedule")
+            df = final_schedule.get_as_df()
+        
+            return df
+        except Exception as e:
+            st.error(f"Error loading availability data: {str(e)}")
+            return None
             
     def load_role_data(self):
         """Load role-specific data"""
@@ -199,6 +210,8 @@ def main():
         st.session_state.availability_data = None
     if 'scheduler' not in st.session_state:
         st.session_state.scheduler = None
+    if 'final_schedule' not in st.session_state:
+        st.session_state.final_schedule = None
     if 'role_data_loaded' not in st.session_state:
         st.session_state.role_data_loaded = False
 
@@ -240,8 +253,8 @@ def main():
                 st.subheader("Current Availability Data")
                 st.dataframe(st.session_state.availability_data)
                 if st.session_state.scheduler.load_role_data():
-                            st.session_state.role_data_loaded = True
-                            st.success("Role data loaded successfully!")
+                    st.session_state.role_data_loaded = True
+                    st.success("Role data loaded successfully!")
 
             if st.session_state.role_data_loaded:
                 if st.button("Generate Schedule", key="generate_button"):
@@ -257,14 +270,24 @@ def main():
                 st.subheader("Generated Schedule")
                 st.dataframe(st.session_state.generated_schedule)
 
-                if st.button("Save Schedule to Google Sheet", key="save_button"):
-                        
-                    # if st.session_state.scheduler.save_schedule(st.session_state.generated_schedule):
+                # Add password input for saving
+                password = st.text_input("Enter password to save the schedule:", type="password", key="save_password")
+                
+                if password == "123456":
+                    st.success("Password accepted. You can now save the schedule.")
+                    if st.button("Save Schedule to Google Sheet", key="save_button"):
+                        # Uncomment and replace with actual save logic
+                        # if st.session_state.scheduler.save_schedule(st.session_state.generated_schedule):
                         st.success("Schedule successfully saved to Google Sheet!")
+                elif password != "":
+                    st.error("Incorrect password. Please try again.")
+
+            
+
 
     # Tab: Analytics
     elif selected_tab == "Analytics":
-        st.subheader("Analytics: Availability Overview")
+        st.subheader("Overall Availability")
         if st.session_state.availability_data is not None:
             # Convert date columns to datetime and sort
             availability_data = st.session_state.availability_data.copy()
@@ -350,6 +373,90 @@ def main():
 
             # Display the chart
             st.altair_chart(bar_chart, use_container_width=True)
+
+            st.subheader("Role Coverage Insights")
+            # Load final schedule data using existing scheduler instance
+            if st.session_state.scheduler is not None:
+                final_schedule = st.session_state.scheduler.load_final_schedule_data()
+                if final_schedule is not None:
+                    st.session_state.final_schedule = final_schedule
+                else:
+                    st.warning("Could not load final schedule data.")
+            
+            # Use the loaded final schedule data
+            if st.session_state.final_schedule is not None:
+                # Copy the schedule data
+                scheduled_data = st.session_state.final_schedule.copy()
+
+                # Reshape the data: Convert wide format to long format
+                melted_schedule = scheduled_data.melt(
+                    id_vars=["role"],  # Keep "role" as the identifier
+                    var_name="Date",   # Columns become "Date"
+                    value_name="Person"  # Values become "Person"
+                ).dropna()
+
+                # Ensure uniform data types and handle "None"/NaN
+                melted_schedule["Person"] = melted_schedule["Person"].fillna("Unassigned")
+
+                # Analytics: Assignments per Person
+                st.subheader("Assignments per Person")
+                person_assignments = melted_schedule.groupby("Person").size().reset_index(name="Count")
+                person_chart = alt.Chart(person_assignments).mark_bar().encode(
+                    x=alt.X("Person:N", sort="-y", title="Person"),
+                    y=alt.Y("Count:Q", title="Number of Assignments"),
+                    tooltip=["Person", "Count"]
+                ).properties(
+                    width=800,
+                    height=400,
+                    title="Assignments per Person"
+                )
+                st.altair_chart(person_chart, use_container_width=True)
+
+                # Analytics: Assignments per Role
+                st.subheader("Assignments per Role")
+                role_assignments = melted_schedule.groupby("role").size().reset_index(name="Count")
+                role_chart = alt.Chart(role_assignments).mark_bar().encode(
+                    x=alt.X("role:N", sort="-y", title="Role"),
+                    y=alt.Y("Count:Q", title="Number of Assignments"),
+                    tooltip=["role", "Count"]
+                ).properties(
+                    width=800,
+                    height=400,
+                    title="Assignments per Role"
+                )
+                st.altair_chart(role_chart, use_container_width=True)
+
+                # Analytics: Fairness Analysis
+                st.subheader("Fairness Analysis")
+                avg_assignments = person_assignments["Count"].mean()
+                person_assignments["Deviation"] = person_assignments["Count"] - avg_assignments
+                fairness_chart = alt.Chart(person_assignments).mark_bar().encode(
+                    x=alt.X("Person:N", sort="-y", title="Person"),
+                    y=alt.Y("Deviation:Q", title="Deviation from Average"),
+                    color=alt.condition(
+                        alt.datum.Deviation > 0,
+                        alt.value("#1f77b4"),  # Blue for above average
+                        alt.value("#d62728")  # Red for below average
+                    ),
+                    tooltip=["Person", "Count", "Deviation"]
+                ).properties(
+                    width=800,
+                    height=400,
+                    title="Deviation from Average Assignments"
+                )
+                st.altair_chart(fairness_chart, use_container_width=True)
+
+            else:
+                st.info("No final schedule data available for analysis.")
+        else:
+            st.error("Scheduler not properly initialized.")
+
+
+
+                
+            
+        
+
 
     # Tab: Check Availability for a Specific Date
     elif selected_tab == "Check Availability":
