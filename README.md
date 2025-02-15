@@ -2,6 +2,8 @@
 
 ![Joshua Machine Application](screenshots/Screenshot%202025-02-15%20at%204.45.27%20PM.png)
 
+![Joshua Machine Application Analytics](screenshots/Screenshot%202025-02-15%20at%205.09.43%20PM.png)
+
 ![Joshua Machine Application Analytics](screenshots/Screenshot%202025-02-15%20at%204.46.33%20PM.png)
 
 A modular Streamlit-based application designed to automate church service role scheduling while considering member availability and role qualifications.
