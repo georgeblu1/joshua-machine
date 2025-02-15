@@ -112,25 +112,101 @@ If you just want to run the application without installing it as a package:
 pip install -r requirements.txt
 ```
 
-## Google Sheets Setup
+## Sheet Format Requirements
 
-1. Create a Google Cloud Project:
-   - Go to Google Cloud Console
-   - Create a new project
-   - Enable Google Sheets API
+The application requires specific worksheet structures in either Google Sheets or Excel format. A sample file (`Schedule.xlsx`) is provided in the repository for reference.
 
-2. Create Service Account:
-   - Go to Credentials
-   - Create Service Account
-   - Download JSON credentials
+### Required Sheets
 
-3. Setup Credentials:
-   - Rename downloaded JSON to `credentials.json`
-   - Place in project root directory
+1. `cleaned_availability` Sheet:
+   - First column must be named "Name List" (contains member names)
+   - Subsequent columns should be dates in DD/MM format (e.g., "04/02")
+   - Values should be either "Yes" or "No"
+   - Example:
+     ```
+     Name List  | 04/02 | 11/02 | 18/02 | 25/02
+     John Smith | Yes   | No    | Yes   | Yes
+     Mary Jones | No    | Yes   | Yes   | No
+     ```
 
-4. Prepare Google Sheet:
-   - Create new Google Sheet
-   - Add required worksheets:
+2. Role Qualification Sheets:
+   Each role requires its own sheet with qualified members:
+
+   - `vocal_main`:
+     ```
+     name
+     John Smith
+     Sarah Kim
+     ```
+
+   - `vocal_sub`:
+     ```
+     name
+     Mary Johnson
+     Emma Davis
+     ```
+
+   - `piano`:
+     ```
+     name
+     David Lee
+     Sarah Kim
+     ```
+
+   - `drum`:
+     ```
+     name
+     Michael Chen
+     James Brown
+     ```
+
+   - `bass`:
+     ```
+     name
+     Daniel Wilson
+     James Brown
+     ```
+
+   - `pa`:
+     ```
+     name
+     David Lee
+     Michael Chen
+     ```
+
+   - `ppt`:
+     ```
+     name
+     Laura White
+     Emma Davis
+     ```
+
+3. `final_schedule` Sheet:
+   - Will be populated by the application
+   - Rows represent roles
+   - Columns represent dates
+   - Example structure:
+     ```
+     role        | 04/02      | 11/02      | 18/02
+     vocal_main  | John Smith | Sarah Kim  | John Smith
+     vocal_sub1  | Mary Jones | Emma Davis | Mary Jones
+     vocal_sub2  | Emma Davis | Mary Jones | Emma Davis
+     ```
+
+### Important Notes:
+
+1. Column Names:
+   - The name column in role sheets must be lowercase "name"
+   - Date columns must be in DD/MM format
+   - Name List column must be exactly "Name List"
+
+2. Values:
+   - Availability values must be "Yes" or "No" (case-sensitive)
+   - Role sheets should only contain qualified members
+   - Member names must be consistent across all sheets
+
+3. Sheet Names:
+   - Must match exactly as specified (case-sensitive):
      - `cleaned_availability`
      - `vocal_main`
      - `vocal_sub`
@@ -140,7 +216,22 @@ pip install -r requirements.txt
      - `pa`
      - `ppt`
      - `final_schedule`
-   - Share sheet with service account email
+
+### Converting Excel to Google Sheets
+
+1. Create a new Google Sheet
+2. Import the sample Excel file (`Schedule.xlsx`)
+3. Ensure all sheet names and column headers remain exactly the same
+4. Share the sheet with your service account email
+
+### Validation Tips
+
+Before using the sheet:
+1. Check for consistent name spelling across sheets
+2. Verify date format (DD/MM)
+3. Ensure "Yes"/"No" values are properly capitalized
+4. Confirm all required sheets are present
+5. Verify column header names match specifications
 
 ## Usage
 
