@@ -1,11 +1,49 @@
 # Joshua Machine - Church Service Scheduler
 
-A Streamlit-based application designed to automate the scheduling of church service roles while considering availability and role qualifications.
+A modular Streamlit-based application designed to automate church service role scheduling while considering member availability and role qualifications.
+
+## Project Structure
+
+```
+joshua-machine/
+├── src/
+│   ├── __init__.py
+│   ├── data_manager.py
+│   ├── analytics/           # Analytics functionality
+│   │   ├── __init__.py
+│   │   ├── availability_analyzer.py
+│   │   ├── schedule_analyzer.py
+│   │   └── visualization.py
+│   ├── availability/        # Availability checking
+│   │   ├── __init__.py
+│   │   ├── availability_checker.py
+│   │   └── role_matcher.py
+│   ├── scheduler/          # Core scheduling logic
+│   │   ├── __init__.py
+│   │   ├── scheduler.py
+│   │   └── role_manager.py
+│   └── ui/                 # User interface components
+│       ├── __init__.py
+│       ├── scheduling_page.py
+│       ├── analytics_page.py
+│       └── availability_page.py
+├── app.py                  # Main application entry
+├── setup.py               # Package installation setup
+├── requirements.txt       # Package dependencies
+└── README.md             # Documentation
+```
 
 ## Features
 
-- **Automated Schedule Generation**: Efficiently creates service schedules based on member availability and role qualifications
-- **Role-Based Assignment**: Supports multiple roles including:
+### Core Features
+- **Automated Schedule Generation**: Creates service schedules based on:
+  - Member availability
+  - Role qualifications
+  - Historical assignments
+  - Fair distribution algorithms
+
+### Role Management
+- Supports multiple roles:
   - Main Vocal
   - Sub Vocals (2 positions)
   - Piano
@@ -13,14 +51,18 @@ A Streamlit-based application designed to automate the scheduling of church serv
   - Bass
   - PA System
   - Presentation (PPT)
-- **Fair Distribution**: Implements intelligent assignment algorithms to ensure equitable distribution of roles
-- **Analytics Dashboard**: Provides insights into:
-  - Overall member availability
-  - Role coverage
+
+### Analytics
+- **Availability Analysis**:
+  - Member availability patterns
+  - Date-wise availability trends
+  - Weekly patterns analysis
+  
+- **Schedule Analysis**:
   - Assignment distribution
-  - Fairness analysis
-- **Availability Checker**: Tool to check member availability for specific dates
-- **Google Sheets Integration**: Seamlessly connects with Google Sheets for data management
+  - Role coverage
+  - Fairness metrics
+  - Member participation statistics
 
 ## Prerequisites
 
@@ -30,97 +72,191 @@ A Streamlit-based application designed to automate the scheduling of church serv
 
 ## Installation
 
+### Method 1: Development Installation
+
 1. Clone the repository:
 ```bash
 git clone https://github.com/yourusername/joshua-machine.git
 cd joshua-machine
 ```
 
-2. Install required dependencies:
+2. Create and activate a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install in development mode:
+```bash
+pip install -e .
+```
+
+### Method 2: Installation from Source
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/joshua-machine.git
+cd joshua-machine
+```
+
+2. Build and install the package:
+```bash
+python setup.py install
+```
+
+### Method 3: Install Dependencies Only
+
+If you just want to run the application without installing it as a package:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Set up Google Sheets credentials:
-   - Create a project in Google Cloud Console
+## Google Sheets Setup
+
+1. Create a Google Cloud Project:
+   - Go to Google Cloud Console
+   - Create a new project
    - Enable Google Sheets API
-   - Create service account credentials
-   - Download the credentials as `credentials.json`
-   - Place `credentials.json` in the project root directory
 
-## Google Sheets Structure
+2. Create Service Account:
+   - Go to Credentials
+   - Create Service Account
+   - Download JSON credentials
 
-The application expects the following worksheet structure in your Google Sheet:
+3. Setup Credentials:
+   - Rename downloaded JSON to `credentials.json`
+   - Place in project root directory
 
-1. `cleaned_availability` - Member availability data
-   - First column: Member names
-   - Subsequent columns: Dates (DD/MM format)
-   - Values: "Yes" or "No"
-
-2. Role-specific sheets:
-   - `vocal_main` - Main vocal qualified members
-   - `vocal_sub` - Sub vocal qualified members
-   - `piano` - Piano qualified members
-   - `drum` - Drum qualified members
-   - `bass` - Bass qualified members
-   - `pa` - PA system qualified members
-   - `ppt` - Presentation qualified members
-
-3. `final_schedule` - Generated schedule output
+4. Prepare Google Sheet:
+   - Create new Google Sheet
+   - Add required worksheets:
+     - `cleaned_availability`
+     - `vocal_main`
+     - `vocal_sub`
+     - `piano`
+     - `drum`
+     - `bass`
+     - `pa`
+     - `ppt`
+     - `final_schedule`
+   - Share sheet with service account email
 
 ## Usage
 
-1. Start the application:
+### Running the Application
+
+Method 1: Using installed package:
+```bash
+joshua-machine
+```
+
+Method 2: Using Streamlit directly:
 ```bash
 streamlit run app.py
 ```
 
-2. Enter your Google Sheet key in the connection panel
+### First-Time Setup
 
-3. Navigate through the tabs:
-   - **Scheduling**: Generate and save service schedules
-   - **Analytics**: View availability and assignment statistics
-   - **Check Availability**: Check member availability for specific dates
+1. Launch the application
+2. Enter Google Sheet key when prompted
+3. Verify connection success
 
-## Algorithm Details
+### Navigation
 
-The scheduler implements a priority-based assignment system that:
-1. Considers member availability for each date
-2. Checks role qualifications
-3. Maintains fair distribution of assignments
-4. Prevents duplicate assignments on the same date
-5. Preserves role-specific requirements (e.g., separate main and sub vocals)
+Use the sidebar to access different features:
+- **Scheduling**: Generate and manage schedules
+- **Analytics**: View statistics and analysis
+- **Check Availability**: Check member availability
 
-## Configuration
+## Development
 
-Default password for saving schedules: `123456`
+### Setup Development Environment
 
-## Contributing
+1. Create development environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -e .[dev]
+```
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+2. Install development dependencies:
+```bash
+pip install -r requirements-dev.txt  # If exists
+```
+
+### Running Tests
+
+```bash
+pytest tests/
+```
+
+### Code Style
+
+Follow PEP 8 guidelines and use provided tools:
+```bash
+# Format code
+black src/
+
+# Check style
+flake8 src/
+
+# Check types
+mypy src/
+```
+
+### Making Changes
+
+1. Create new branch:
+```bash
+git checkout -b feature/your-feature-name
+```
+
+2. Make changes and test
+3. Update documentation
+4. Create pull request
+
+## Troubleshooting
+
+### Common Issues
+
+1. ModuleNotFoundError:
+   - Ensure virtual environment is activated
+   - Verify installation with `pip list`
+   - Check import paths
+
+2. Google Sheets Connection:
+   - Verify credentials.json location
+   - Check service account permissions
+   - Confirm sheet sharing settings
+
+3. Schedule Generation:
+   - Verify data format in sheets
+   - Check role requirements
+   - Review availability data
+
+### Getting Help
+
+1. Check documentation
+2. Open GitHub issue
+3. Contact maintainers
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## Contributing
+
+1. Fork repository
+2. Create feature branch
+3. Commit changes
+4. Push to branch
+5. Submit pull request
+
 ## Acknowledgments
 
-- Built with [Streamlit](https://streamlit.io/)
-- Uses [PyGSheets](https://pygsheets.readthedocs.io/) for Google Sheets integration
-- Visualization powered by [Altair](https://altair-viz.github.io/)
-
-## Support
-
-For support, please open an issue in the GitHub repository or contact the maintainers.
-
-## Sample Data
-
-A sample Excel file (`Schedule.xlsx`) is provided to demonstrate the expected data structure. You can use this as a template when setting up your own Google Sheet.
-
-## Security Note
-
-The current implementation includes a hardcoded password (`123456`) for schedule saving. In a production environment, it's recommended to:
-1. Use environment variables for sensitive data
-2. Implement proper authentication
-3. Enable HTTPS
-4. Follow security best practices
+Built with:
+- [Streamlit](https://streamlit.io/)
+- [PyGSheets](https://pygsheets.readthedocs.io/)
+- [Altair](https://altair-viz.github.io/)
+- [Pandas](https://pandas.pydata.org/)
