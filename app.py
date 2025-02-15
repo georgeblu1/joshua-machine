@@ -63,7 +63,7 @@ def handle_google_sheets():
 def main():
     """Main application entry point."""
     st.title("Joshua Machine")
-    st.subheader("Connaught Church Service Scheduler")
+    st.subheader("Church Service Scheduler")
     
     # Initialize session state
     initialize_session_state()
